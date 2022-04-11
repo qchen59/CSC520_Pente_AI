@@ -51,7 +51,7 @@ def update_board(curr_board, captures, turn, row, col):
             for i in range(1, 5):
                 row_change = i * dir[0]
                 col_change = i * dir[1]
-                if 0 <= row + row_change < size and 0 <= col + col_change < size:
+                if 0 <= row - row_change < size and 0 <= col - col_change < size:
                     if board[row - row_change][col - col_change] == turn:
                         count += 1
                     else:
@@ -92,6 +92,8 @@ def update_board(curr_board, captures, turn, row, col):
 if __name__ == '__main__':
     game = make_board(7)
     captures = [0, 0]
+
+    game, captures, win = update_board(game, captures, 1, 0, 6)
 
     game, captures, win = update_board(game, captures, 1, 0, 0)
     game, captures, win = update_board(game, captures, 2, 1, 1)
