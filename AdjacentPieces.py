@@ -18,7 +18,7 @@ def calculate_heuristic(board, turn):
     :param board: a Pente game board
     :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
 
-    :return: current board and a score that is calculated based on the heuristic
+    :return: current board, board with heuristic values, and a score that is calculated based on the heuristic
     """
 
     size = len(board)
@@ -77,4 +77,4 @@ def calculate_heuristic(board, turn):
         for j in range(size):
             if heuristics[i][j] > 2:
                 score += heuristics[i][j]
-    return board, score
+    return board, heuristics, score
