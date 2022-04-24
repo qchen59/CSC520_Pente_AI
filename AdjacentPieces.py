@@ -71,9 +71,9 @@ def calculate_heuristic(board, turn):
                         elif right_node != turn and right_node != opponent and right_node < count:
                             heuristics[i + row_change][j + col_change] = count + (right_node % 2)
 
-    print("Heuristic")
-    for i in heuristics:
-        print(*i, sep=' ')
+    # print("Heuristic")
+    # for i in heuristics:
+    #     print(*i, sep=' ')
 
     max_index = np.where(heuristics == np.amax(heuristics))
     return list(zip(max_index[0], max_index[1]))[0]
