@@ -49,7 +49,7 @@ def calculate_heuristic(board, turn):
                         left_node = heuristics[i - axis[0]][j - axis[1]]
                         if left_node != turn and left_node != opponent and left_node == 0:
                             heuristics[i - axis[0]][j - axis[1]] = count
-                        elif left_node != turn and left_node != opponent and i - 2 * axis[0] >= 0 and j - 2 * axis[1] >= 0:
+                        elif left_node != turn and left_node != opponent and 0 <= i - 2 * axis[0] < size and 0 <= j - 2 * axis[1] < size:
                             if heuristics[i - 2 * axis[0]][j - 2 * axis[1]] == turn:
                                 streak = values[heuristics[i - axis[0]][j - axis[1]]] + values[count]
                                 try:
