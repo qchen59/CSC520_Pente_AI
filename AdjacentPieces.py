@@ -3,22 +3,22 @@ import copy
 
 def calculate_heuristic(board, turn):
     """
-    Detects streaks (consecutive placements of stones) for the given board and turn. Outputs a score based on the
-    amount of streaks existed in the board.
+    Detects streaks (consecutive placements of stones) for the given board and turn. Outputs a score based on how ideal
+    a position is for the next placement, based on the current streaks.
 
-    streak of 0 is given a score of 0.
-    streak of 1 is given a score of 1.
-    streak of 2 is given a score of 2.
-    streak of 3 is given a score of 3.
-    streak of 4 is given a score of 4.
+    a node adjacent to a streak of 0 is given a score of 0.
+    a node adjacent to a streak of 1 is given a score of 3.
+    a node adjacent to a streak of 2 is given a score of 4.
+    a node adjacent to a streak of 3 is given a score of 5.
+    a node adjacent to a streak of 4 is given a score of 6.
 
-    If multiple streaks exists, scores will be added together.
+    Final output is the total of all heuristic values.
 
 
     :param board: a Pente game board
     :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
 
-    :return: the score that is calculated based on the heuristic
+    :return: a score that is calculated based on the heuristic
     """
 
     size = len(board)
