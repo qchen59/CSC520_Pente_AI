@@ -10,13 +10,14 @@ import pente
 class Board:
     board = []
     status = 0
+    move = []
 
-    def __init__(self, board = None):
+    def __init__(self, board=None):
         self.board = pente.make_board(7)
         if board != None:
             for i in range(len(board.board)):
                 for j in range(len(board.board[0])):
-                    self.board[i][j]= board.board[i][j]
+                    self.board[i][j] = board.board[i][j]
 
     def getEmptyPositions(self):
         emptyPosition = []
@@ -30,8 +31,10 @@ class Board:
         captures = [0, 0]
         # (game, captures, 1, 0, 6)
         game, captures, win = pente.update_board(self.board, captures, playerNo, p[0], p[1])
+        # print(captures)
         self.board = game
         self.status = win
+        self.move = copy.deepcopy(p)
 
     def printBoard(self):
         pente.print_board(self.board)
@@ -112,6 +115,7 @@ class MCTS:
     level = 3
     opponent = 0
     root = Node()
+
     # TODO: Check this
     def selectPromisingNode(self, rootNode):
         node = rootNode
@@ -184,8 +188,7 @@ class MCTS:
 
         winnerNode = self.root.getChildWithMaxScore()
         self.root = winnerNode
-        return winnerNode.state.board
-
+        return winnerNode.state.board.move, winnerNode.state.board
 
 
 def bestUCT(node):
@@ -211,14 +214,20 @@ def bestUCT(node):
 
 if __name__ == '__main__':
     board = Board()
+    game = pente.make_board(7)
     player = 1
     totalMove = 7 * 7
     mcts = MCTS()
-    for i in range(totalMove):
+    for i in range(49):
         print(i)
-        board = mcts.findNextMove(board, player)
-        board.printBoard()
-        if board.status != 0:
-            print(board.status, "win!!!!!")
+        move, board = mcts.findNextMove(board, player)
+        # board.printBoard()
+        print('move', move)
+        captures = [0, 0]
+        game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
+        print('captures', captures)
+        pente.print_board(game)
+        if win != 0:
+            print(win, "win!!!!!")
             break
         player = 3 - player
