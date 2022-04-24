@@ -1,27 +1,24 @@
 import copy
-import numpy as np
 
 
 def calculate_heuristic(board, turn):
     """
-    Detects streaks (consecutive placements of stones) for the given turn. Then sets the heuristic values of the nodes
-    that surrounds the streaks. Following are the possible heuristic values, their interpretations, and some examples in
-    the x axis. Same examples are valid for any direction (4 axes in total) in the board. Star signs (*) in the examples
-    represent streaks/already placed stones.
+    Detects streaks (consecutive placements of stones) for the given board and turn. Outputs a score based on the
+    amount of streaks existed in the board.
 
-    # 6 - adjacent to a streak of four  (6 * * * * 6), (3 * 6 * * * 5)
-    # 5 - adjacent to a streak of three (5 * * * 5), (4 * * 5 * 3)
-    # 4 - adjacent to a streak of two   (4 * * 4), (3 * 4 * 3)
-    # 3 - adjacent to a streak of one   (3 * 3)
+    streak of 0 is given a score of 0.
+    streak of 1 is given a score of 1.
+    streak of 2 is given a score of 2.
+    streak of 3 is given a score of 3.
+    streak of 4 is given a score of 4.
 
-    Notes: Uncomment the 'for' loop at line 73 if you want to take a look at an overview of the calculated heuristic
-           values. Number '1' and '2' represents the stone placements of each player. Number from 3-6 represents
-           heuristic values for the given turn.
+    If multiple streaks exists, scores will be added together.
 
-    :param board: a Pente game board from an ongoing game (must not be a finished game)
+
+    :param board: a Pente game board
     :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
 
-    :return: the coordinates of the maximum heuristic value (best position to place the piece).
+    :return: the score that is calculated based on the heuristic
     """
 
     size = len(board)
@@ -71,9 +68,13 @@ def calculate_heuristic(board, turn):
                         elif right_node != turn and right_node != opponent and right_node < count:
                             heuristics[i + row_change][j + col_change] = count + (right_node % 2)
 
-    # print("Heuristic")
-    # for i in heuristics:
-    #     print(*i, sep=' ')
+    print("Heuristic")
+    for i in heuristics:
+        print(*i, sep=' ')
 
-    max_index = np.where(heuristics == np.amax(heuristics))
-    return list(zip(max_index[0], max_index[1]))[0]
+    score = 0
+    for i in range(size):
+        for j in range(size):
+            if heuristics[i][j] > 2:
+                score += heuristics[i][j]
+    print(score)
