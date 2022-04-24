@@ -56,7 +56,10 @@ def calculate_heuristic(board, turn):
                                     streak = 4
                                 heuristics[i - axis[0]][j - axis[1]] = streaks[streak]
                         elif left_node != turn and left_node != opponent and left_node < count:
-                            heuristics[i - axis[0]][j - axis[1]] = count + (left_node % 2)
+                            if count + (left_node % 2) > 6:
+                                heuristics[i - axis[0]][j - axis[1]] = count
+                            else:
+                                heuristics[i - axis[0]][j - axis[1]] = count + (left_node % 2)
 
                     # Setting the heuristic value of the node that is adjacent to the streak from the right side
                     if 0 <= i + row_change < size and 0 <= j + col_change < size:
@@ -64,7 +67,10 @@ def calculate_heuristic(board, turn):
                         if right_node != turn and right_node != opponent and right_node == 0:
                             heuristics[i + row_change][j + col_change] = count
                         elif right_node != turn and right_node != opponent and right_node < count:
-                            heuristics[i + row_change][j + col_change] = count + (right_node % 2)
+                            if count + (right_node % 2) > 6:
+                                heuristics[i + row_change][j + col_change] = count
+                            else:
+                                heuristics[i + row_change][j + col_change] = count + (right_node % 2)
 
     # print("Heuristics")
     # for i in heuristics:
