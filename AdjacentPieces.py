@@ -52,11 +52,9 @@ def calculate_heuristic(board, turn):
                         elif left_node != turn and left_node != opponent and 0 <= i - 2 * axis[0] < size and 0 <= j - 2 * axis[1] < size:
                             if heuristics[i - 2 * axis[0]][j - 2 * axis[1]] == turn:
                                 streak = values[heuristics[i - axis[0]][j - axis[1]]] + values[count]
-                                try:
-                                    heuristics[i - axis[0]][j - axis[1]] = streaks[streak]
-                                except KeyError:
-                                    print("The game has already finished")
-                                    exit(-1)
+                                if streak > 4:
+                                    streak = 4
+                                heuristics[i - axis[0]][j - axis[1]] = streaks[streak]
                         elif left_node != turn and left_node != opponent and left_node < count:
                             heuristics[i - axis[0]][j - axis[1]] = count + (left_node % 2)
 
@@ -68,9 +66,9 @@ def calculate_heuristic(board, turn):
                         elif right_node != turn and right_node != opponent and right_node < count:
                             heuristics[i + row_change][j + col_change] = count + (right_node % 2)
 
-    print("Heuristic")
-    for i in heuristics:
-        print(*i, sep=' ')
+    # print("Heuristics")
+    # for i in heuristics:
+    #     print(*i, sep=' ')
 
     score = 0
     for i in range(size):
