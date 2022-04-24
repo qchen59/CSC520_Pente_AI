@@ -211,7 +211,7 @@ if __name__ == '__main__':
     player = 1
     totalMove = 7 * 7
     mcts = MCTS()
-    for i in range(5):
+    for i in range(totalMove):
         print(i)
         board = mcts.findNextMove(board, player)
         board.printBoard()
