@@ -134,7 +134,7 @@ class MCTS:
             newNode.childArray = []
             node.childArray.append(newNode)
 
-    def backPropogation(self, nodeToExplore, playerNo):
+    def backPropagation(self, nodeToExplore, playerNo):
         tempNode = nodeToExplore
         while tempNode is not None:
             tempNode.state.incrementVisit()
@@ -178,7 +178,7 @@ class MCTS:
 
             playoutResult = self.simulateRandomPlayout(nodeToExplore)
             # Update
-            self.backPropogation(nodeToExplore, playoutResult)
+            self.backPropagation(nodeToExplore, playoutResult)
             # print('end', nodeToExplore)
             # print('end', nodeToExplore.childArray[0].childArray)
 
