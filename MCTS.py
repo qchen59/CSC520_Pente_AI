@@ -11,8 +11,12 @@ class Board:
     board = []
     status = 0
 
-    def __init__(self):
+    def __init__(self, board = None):
         self.board = pente.make_board(7)
+        if board != None:
+            for i in range(len(board.board)):
+                for j in range(len(board.board[0])):
+                    self.board[i][j]= board.board[i][j]
 
     def getEmptyPositions(self):
         emptyPosition = []
@@ -41,7 +45,7 @@ class State:
 
     def __init__(self, state=None):
         if state is not None:
-            self.board = copy.deepcopy(state.board)
+            self.board = Board(state.board)
             self.playerNo = state.playerNo
             self.visitCount = state.visitCount
             self.winScore = state.winScore
@@ -52,7 +56,7 @@ class State:
         availablePosition = self.board.getEmptyPositions()
         for p in availablePosition:
             newState = State()
-            newState.board = copy.deepcopy(self.board)
+            newState.board = Board(self.board)
             newState.playerNo = 3 - self.playerNo
             newState.board.performMove(p, newState.playerNo)
             possibleStates.append(newState)
@@ -108,7 +112,7 @@ class MCTS:
     level = 3
     opponent = 0
     root = Node()
-
+    # TODO: Check this
     def selectPromisingNode(self, rootNode):
         node = rootNode
         while len(node.childArray) != 0:
@@ -161,7 +165,7 @@ class MCTS:
         for i in range(3):
             # Slection
             promisingNode = self.selectPromisingNode(self.root)
-            print('promising', promisingNode.state.board.printBoard())
+            # print('promising', promisingNode.state.board.printBoard())
             # Expansion
             if promisingNode.state.board.status == 0:
                 self.expandNode(promisingNode)
@@ -196,11 +200,10 @@ def bestUCT(node):
     for n in node.childArray:
         nodeVisit = n.state.visitCount
         nodeWinScore = n.state.winScore
-        if n.state.visitCount == 0:
-            uct = sys.maxsize
-        else:
-            # print('log', nodeVisit, totalVisit)
-            uct = (nodeWinScore / nodeVisit) + 1.41 * math.sqrt(math.log(totalVisit) / nodeVisit)
+        if nodeVisit == 0:
+            nodeVisit = 1
+        # print('log', nodeVisit, totalVisit)
+        uct = (nodeWinScore / nodeVisit) + 1.41 * math.sqrt(math.log(totalVisit) / nodeVisit)
         uctlist.append({'uct': uct, 'node': n})
     uctlist = sorted(uctlist, key=lambda d: d['uct'], reverse=True)
     return uctlist[0]['node']
@@ -211,7 +214,7 @@ if __name__ == '__main__':
     player = 1
     totalMove = 7 * 7
     mcts = MCTS()
-    for i in range(5):
+    for i in range(totalMove):
         print(i)
         board = mcts.findNextMove(board, player)
         board.printBoard()
