@@ -29,13 +29,12 @@ def momentum_heuristic(board, turn):
                             num_blocking += 1
                     except IndexError:
                         num_blocking += 1
-                        print("Index Error!")
                     try:
                         if (board[row + (1 * dir[0])][column + (1 * dir[1])] == turn and
                                 board[row + (2 * dir[0])][column + (2 * dir[1])] == turn and
                                 board[row + (3 * dir[0])][column + (3 * dir[1])] == turn):
                             try:
-                                if board[row - (1 * dir[0])][column - (1 * dir[1])] == opp:
+                                if board[row + (4 * dir[0])][column + (4 * dir[1])] == opp:
                                     num_blocking += 1
                             except IndexError:
                                 num_blocking += 1
@@ -44,10 +43,14 @@ def momentum_heuristic(board, turn):
                                 tot += XXXX_points
                             elif num_blocking == 1:
                                 tot += XXXX_points / 2
-                        elif (board[row + (1 * dir[0])][column + (1 * dir[1])] == turn and
+                            continue
+                    except IndexError:
+                        pass
+                    try:
+                        if (board[row + (1 * dir[0])][column + (1 * dir[1])] == turn and
                               board[row + (2 * dir[0])][column + (2 * dir[1])] == turn):
                             try:
-                                if board[row - (1 * dir[0])][column - (1 * dir[1])] == opp:
+                                if board[row + (3 * dir[0])][column + (3 * dir[1])] == opp:
                                     num_blocking += 1
                             except IndexError:
                                 num_blocking += 1
@@ -56,9 +59,13 @@ def momentum_heuristic(board, turn):
                                 tot += XXX_points
                             elif num_blocking == 1:
                                 tot += XXX_points / 2
-                        elif board[row + (2 * dir[0])][column + (2 * dir[1])] == turn:
+                            continue
+                    except IndexError:
+                        continue
+                    try:
+                        if board[row + (2 * dir[0])][column + (2 * dir[1])] == turn:
                             try:
-                                if board[row - (1 * dir[0])][column - (1 * dir[1])] == opp:
+                                if board[row + (3 * dir[0])][column + (3 * dir[1])] == opp:
                                     num_blocking += 1
                             except IndexError:
                                 num_blocking += 1
@@ -67,6 +74,7 @@ def momentum_heuristic(board, turn):
                                 tot += X0X_points
                             elif num_blocking == 1:
                                 tot += X0X_points / 2
+                            continue
                     except IndexError:
                         continue
 
@@ -74,12 +82,12 @@ def momentum_heuristic(board, turn):
 
 
 if __name__ == '__main__':
-    board = [[0, 0, 1, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 1, 0, 1, 0, 0],
+    board = [[0, 0, 0, 0, 1, 0, 1],
              [0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0],
              [0, 0, 0, 0, 0, 0, 0],
-             [0, 0, 0, 0, 0, 0, 0]]
+             [0, 0, 1, 0, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0, 0],
+             [1, 0, 0, 0, 0, 0, 0]]
 
     print(momentum_heuristic(board, 1)[1])
