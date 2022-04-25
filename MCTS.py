@@ -5,6 +5,7 @@ import random
 import sys
 import copy
 import pente
+import ConsecutivePieces
 
 
 class Board:
@@ -65,11 +66,26 @@ class State:
             possibleStates.append(newState)
         return possibleStates
 
-    def randomPlay(self):
+    def simulatePlay(self, heur):
         # get a list of all possible positions on the board and play a random move
-        availablePositions = self.board.getEmptyPositions()
-        selectRandom = random.randrange(0, len(availablePositions))
-        self.board.performMove(availablePositions[selectRandom], self.playerNo)
+        # print('------------', self.playerNo)
+        # self.board.printBoard()
+        if heur == 'conP':
+            board, heuristics, score = ConsecutivePieces.calculate_streaks(self.board.board, self.playerNo)
+        maxnum = 0
+        maxnode = []
+        for i in range(len(heuristics)):
+            for j in range(len(heuristics[0])):
+                if heuristics[i][j] > maxnum and heuristics[i][j] != 1 and heuristics[i][j] != 2:
+                    maxnum = heuristics[i][j]
+                    maxnode = [i, j]
+        if len(maxnode) > 0:
+            self.board.performMove(maxnode, self.playerNo)
+        else:
+            availablePositions = self.board.getEmptyPositions()
+            if len(availablePositions) != 0:
+                selectRandom = random.randrange(len(availablePositions))
+                self.board.performMove(availablePositions[selectRandom], self.playerNo)
 
     def togglePlayer(self):
         self.playerNo = 3 - self.playerNo
@@ -96,7 +112,7 @@ class Node:
             self.childArray = copy.deepcopy(node.childArray)
 
     def getRandomChildNode(self):
-        selectRandom = random.randrange(0, len(self.childArray))
+        selectRandom = random.randrange(len(self.childArray))
         return self.childArray[selectRandom]
 
     def printNode(self):
@@ -147,7 +163,7 @@ class MCTS:
             tempNode = tempNode.parent
 
     # TODO: update with the heuristic implementation
-    def simulateRandomPlayout(self, node):
+    def simulatePlayout(self, node, heur):
         tempNode = Node(node)
         tempState = tempNode.state
         boardStatus = tempState.board.status
@@ -157,11 +173,11 @@ class MCTS:
 
         while boardStatus == 0:
             tempState.togglePlayer()
-            tempState.randomPlay()
+            tempState.simulatePlay(heur)
             boardStatus = tempState.board.status
         return boardStatus
 
-    def findNextMove(self, board, playerNo):
+    def findNextMove(self, board, playerNo, heur):
         self.opponent = 3 - playerNo
         self.root.state.board = board
         self.root.state.playerNo = self.opponent
@@ -180,7 +196,7 @@ class MCTS:
             if len(promisingNode.childArray) > 0:
                 nodeToExplore = promisingNode.getRandomChildNode()
 
-            playoutResult = self.simulateRandomPlayout(nodeToExplore)
+            playoutResult = self.simulatePlayout(nodeToExplore, heur)
             # Update
             self.backPropagation(nodeToExplore, playoutResult)
             # print('end', nodeToExplore)
@@ -211,6 +227,10 @@ def bestUCT(node):
     uctlist = sorted(uctlist, key=lambda d: d['uct'], reverse=True)
     return uctlist[0]['node']
 
+def performSearch(mcts, board, player, heur):
+    move, board = mcts.findNextMove(board, player, heur)
+    return move, board
+
 
 if __name__ == '__main__':
     board = Board()
@@ -218,15 +238,20 @@ if __name__ == '__main__':
     player = 1
     totalMove = 7 * 7
     mcts = MCTS()
-    for i in range(49):
+    i = 0
+    while True:
         print(i)
-        move, board = mcts.findNextMove(board, player)
+        i += 1
+        print('player ', player)
+        move, board = performSearch(mcts, board, player, 'conP')
         # board.printBoard()
         print('move', move)
         captures = [0, 0]
         game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
         print('captures', captures)
         pente.print_board(game)
+        # board, heuristics, score = AdjacentPieces.calculate_heuristic(game, 3 - player)
+        # print('sc', heuristics)
         if win != 0:
             print(win, "win!!!!!")
             break
