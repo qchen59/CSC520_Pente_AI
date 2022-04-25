@@ -1,5 +1,4 @@
 import sys
-import random
 import pente
 import copy
 import ConsecutivePieces
@@ -8,6 +7,9 @@ import timeit
 sys.setrecursionlimit(15000)
 pinfi = sys.maxsize
 ninfi = -sys.maxsize
+# Change here to change the heuristic
+# 1 -- ConsecutivePieces
+numberOfHeuristic = 1
 
 # Board object to implement
 class Board:
@@ -88,7 +90,12 @@ class Board:
 #             self.parent = copy.deepcopy(node.parent)
 #             self.childArray = copy.deepcopy(node.childArray)
 
-
+def getHeu(board, tempplayer):
+    global numberOfHeuristic
+    if numberOfHeuristic == 1:
+        return ConsecutivePieces.calculate_streaks(board, tempplayer)
+    else:
+        raise Exception("GG")
 
 
 def minmax(depth, board, maximizingPlayer, player, alpha, beta, preboard, move):
@@ -100,22 +107,23 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta, preboard, move):
     else:
         tempplayer = 3 - player
     if depth == 3:
-        tboard, heuristics, score = ConsecutivePieces.calculate_streaks(board.board, tempplayer)
+        tboard, heuristics, score = getHeu(board.board, tempplayer)
         # print('player', tempplayer, heuristics[move[0]][move[1]], board.board)
         return score, board
 
     if board.status != 0:
         # print('win')
-        tboard, heuristics, score = ConsecutivePieces.calculate_streaks(board.board, tempplayer)
+        tboard, heuristics, score = getHeu(board.board, tempplayer)
         return score, board
 
     childArray = board.getEmptyPositions()
     if len(childArray) == 0:
-        tboard, heuristics, score = ConsecutivePieces.calculate_streaks(board.board, tempplayer)
+        tboard, heuristics, score = getHeu(board.board, tempplayer)
         return score, board
 
     # Max
     if maximizingPlayer:
+        numberOfHeuristic = 3
         best = ninfi
         for a in childArray:
             temp = Board(board)
@@ -155,24 +163,24 @@ if __name__ == '__main__':
     tik=timeit.default_timer()
     board = Board()
     player = 1
-    totalMove = 7 * 7
     move = [0,0]
     win = 0
     while win == 0:
         print('player ', player)
         v, result = minmax(0, board, True, player,ninfi, pinfi, board, move)
-        print('result', result.moves)
+        # print('result', result.moves)
         result.printBoard()
         move = result.moves[0]['move']
         print('move', move)
         captures = [0, 0]
         # (game, captures, 1, 0, 6)
         board.board, captures, win = pente.update_board(board.board, captures, player, move[0], move[1])
-        print('captures', captures)
+        # print('captures', captures)
         pente.print_board(board.board)
         player = 3 - player
     tok=timeit.default_timer()
     print(win, "win!!!!!")
     print('end')
     print("Processing time: ", tok - tik)
+    print(numberOfHeuristic)
 
