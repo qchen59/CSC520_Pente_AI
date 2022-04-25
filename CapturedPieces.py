@@ -18,7 +18,6 @@ def captured_pieces(board, captures, turn):
     size = len(board)
     heuristics = copy.deepcopy(board)
     opponent = 2 if turn == 1 else 1                           # Getting the opponent
-    score = 0
     possible_captures_turn = 0
     possible_captures_opponent = 0
 
@@ -41,6 +40,7 @@ def captured_pieces(board, captures, turn):
                                 heuristics[i + row_change][j + col_change] = 3
                             break
                         break
+                    count = 0
                     for k in range(1, 4):
                         row_change = k * axis[0]
                         col_change = k * axis[1]
@@ -52,6 +52,7 @@ def captured_pieces(board, captures, turn):
                                 continue
                             elif node != turn and node != opponent and count == 2:
                                 possible_captures_turn += 1
+                                heuristics[i + row_change][j + col_change] = 3
                             break
                         break
 
@@ -71,6 +72,7 @@ def captured_pieces(board, captures, turn):
                                 possible_captures_opponent += 1
                             break
                         break
+                    count = 0
                     for k in range(1, 4):
                         row_change = k * axis[0]
                         col_change = k * axis[1]
@@ -81,9 +83,9 @@ def captured_pieces(board, captures, turn):
                                 count += 1
                                 continue
                             elif node != turn and node != opponent and count == 2:
-                                possible_captures_turn += 1
+                                possible_captures_opponent += 1
                             break
                         break
-
+                        
     score = captures[0] + possible_captures_turn - captures[1] - possible_captures_opponent
     return board, heuristics, score
