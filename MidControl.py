@@ -1,4 +1,4 @@
-import ConsecutivePieces as CP
+import ConsecutivePieces as Cp
 import math
 
 
@@ -12,7 +12,7 @@ def mid_control_streaks(board, turn):
 
     :return: current board, board with heuristic values, and a score that is calculated based on the heuristic
     """
-    board, heuristics, score = CP.calculate_streaks(board, turn)
+    board, heuristics, score = Cp.calculate_streaks(board, turn)
     size = len(board)
 
     if size < 6:                                               # No point calculating this heuristic for smaller boards
