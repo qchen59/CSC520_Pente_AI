@@ -111,6 +111,7 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta, preboard, move):
         # print('player', tempplayer, heuristics[move[0]][move[1]], board.board)
         return score, board
 
+    # if someone wins end and return
     if board.status != 0:
         # print('win')
         tboard, heuristics, score = getHeu(board.board, tempplayer)
