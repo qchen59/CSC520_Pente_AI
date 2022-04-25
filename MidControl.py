@@ -4,8 +4,8 @@ import math
 
 def mid_control_streaks(board, turn):
     """
-    Uses the 'calculate_streaks' method to work out the heuristic values. Then if there are streaks around the middle
-    of the board, the final score is bumped up.
+    Uses the 'calculate_streaks' method to work out the heuristic values. Then the heuristic values of the pieces that
+    are in the middle 5x5 area of the board is doubled. This will bumped up the final score as well.
 
     :param board: a Pente game board
     :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
@@ -35,8 +35,8 @@ def mid_control_streaks(board, turn):
 
 def mid_control_pieces(board, turn):
     """
-    Calculates a heuristic score based on the placements around the middle of the board. For every turn's piece the
-    score is increased by one. For every opponents piece, the score is decreased by one.
+    Calculates a heuristic score based on the placements inside the middle 5x5 area of the board. For every turn's piece
+    the score is increased by one. For every opponents piece, the score is decreased by one.
 
     :param board: a Pente game board
     :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
