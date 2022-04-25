@@ -23,8 +23,13 @@ def mid_control_streaks(board, turn):
     for i in range(mid - 3, mid + 2):
         for j in range(mid - 3, mid + 2):
             if heuristics[i][j] > 2:                           # Doubling the score of the heuristic values that are in
-                score += 2 * heuristics[i][j]                  # the middle of the board.
+                heuristics[i][j] = 2 * heuristics[i][j]        # the middle of the board.
 
+    score = 0
+    for i in range(size):
+        for j in range(size):
+            if heuristics[i][j] > 2:
+                score += heuristics[i][j]
     return board, heuristics, score
 
 
@@ -49,4 +54,4 @@ def mid_control_pieces(board, turn):
                 score += 1
             elif board[i][j] == opponent:
                 score -= 1
-    return board, score
+    return score
