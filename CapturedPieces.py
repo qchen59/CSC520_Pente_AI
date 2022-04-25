@@ -2,6 +2,19 @@ import copy
 
 
 def captured_pieces(board, captures, turn):
+    """
+    Sets the heuristic value of the node if placing a piece in that position makes a capture possible for turn.
+    Furthermore, calculates a final heuristic score based on the following formula.
+
+    Score = No. of turn's captures + No. of possible captures for turn - (No. of opponent's captures + No. of possible
+            captures for opponent)
+
+    :param board: a Pente game board
+    :param captures: a 2-element list for keeping track of captured pieces. 1st element is player 1, 2nd is player 2
+    :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
+
+    :return: current board, board with heuristic values, and a score that is calculated based on the heuristic
+    """
     size = len(board)
     heuristics = copy.deepcopy(board)
     opponent = 2 if turn == 1 else 1                           # Getting the opponent
