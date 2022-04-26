@@ -11,7 +11,7 @@ def momentum_heuristic(board, turn):
 
     :return: current board, heuristic score
     """
-    XXXX_points = 20 # In effect, this score is 30 since having an unblocked 4 also means you have an unblocked 3
+    XXXX_points = 20  # In effect, this score is 30 since having an unblocked 4 also means you have an unblocked 3
     XXX_points = 10
     X0X_points = 3
 
@@ -48,7 +48,7 @@ def momentum_heuristic(board, turn):
                         pass
                     try:
                         if (board[row + (1 * dir[0])][column + (1 * dir[1])] == turn and
-                              board[row + (2 * dir[0])][column + (2 * dir[1])] == turn):
+                                board[row + (2 * dir[0])][column + (2 * dir[1])] == turn):
                             try:
                                 if board[row + (3 * dir[0])][column + (3 * dir[1])] == opp:
                                     num_blocking += 1
@@ -81,6 +81,23 @@ def momentum_heuristic(board, turn):
     return board, tot
 
 
+def MCTS_momentum(board, turn):
+    base = momentum_heuristic(board, turn)
+
+    new_board = []
+    for i in range(len(board)):
+        new_board.append([])
+        for j in range(len(board[0])):
+            if board[i][j] == 0:
+                board[i][j] = turn
+                new_board[i].append(momentum_heuristic(board, turn)[1])
+                board[i][j] = 0
+            else:
+                new_board[i].append(board[i][j])
+
+    return board, new_board, base
+
+
 if __name__ == '__main__':
     board = [[0, 0, 0, 0, 1, 0, 1],
              [0, 0, 0, 0, 0, 0, 0],
@@ -90,4 +107,4 @@ if __name__ == '__main__':
              [0, 0, 0, 0, 0, 0, 0],
              [1, 0, 0, 0, 0, 0, 0]]
 
-    print(momentum_heuristic(board, 1)[1])
+    print(MCTS_momentum(board, 1)[1])
