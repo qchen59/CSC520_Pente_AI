@@ -104,17 +104,18 @@ class Window(QWidget):
 
         if self.turn == 1:
             button.setText('1')
+            button.setStyleSheet("background-color:#ccd4f2;font-weight: bold;color: #000000;")
             self.turn = 2
         else:
             button.setText('2')
+            button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
             self.turn = 1
-
-
 
     def clear_layout(self, layout):
         """
         Clears all elements from an already drawn layout. This method would come in handy when
         implementing set_size method.
+
         :param layout: the layout that needs elements removed
         """
         if layout is not None:
