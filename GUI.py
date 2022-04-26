@@ -11,9 +11,9 @@ class Window(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Pente")
-        self.setFixedSize(800, 800)
+        # self.setFixedSize(800, 800)
         self.turn = 1
-        self.boardSize = 11
+        self.boardSize = 7
         self.game = None
         self.captures = [0, 0]
         self.win = None
@@ -80,10 +80,10 @@ class Window(QWidget):
         """
         Deletes the current game board and recreates it with the user entered size.
         """
-        # TODO : Implement this
-        print("Not implemented Yet")
-        # size = self.sizeWidget.text()
-        # self.clearLayout(self.grid)
+        size = self.sizeWidget.text()
+        self.boardSize = int(size)
+        self.clear_layout(self.grid)
+        self.create_grid(self.boardSize)
 
     def place_stone(self):
         """
