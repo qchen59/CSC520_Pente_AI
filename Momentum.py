@@ -11,8 +11,8 @@ def momentum_heuristic(board, turn):
 
     :return: current board, heuristic score
     """
-    XXXX_points = 20  # In effect, this score is 30 since having an unblocked 4 also means you have an unblocked 3
-    XXX_points = 10
+    XXXX_points = 10  # In effect, this score is 30 since having an unblocked 4 also means you have an unblocked 3
+    XXX_points = 6
     X0X_points = 3
 
     opp = 3 - turn
@@ -115,4 +115,10 @@ if __name__ == '__main__':
              [0, 0, 0, 0, 0, 0, 0],
              [1, 0, 0, 0, 0, 0, 0]]
 
-    print(MCTS_momentum(board, 1)[1])
+    board, heuristics, score = MCTS_momentum(board, 1)
+
+    for i in board:
+        print(i)
+    print("--------------")
+    for i in heuristics:
+        print(i)
