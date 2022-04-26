@@ -6,12 +6,25 @@ import sys
 import copy
 import pente
 import ConsecutivePieces
+import CapturedPieces
+import MidControl
+import Momentum
 
 
 class Board:
+    """
+    The Board class, hold the board status
+    """
+
+    # The 2d array for board
     board = []
+    # current status, 0 : in progress, 1 : player 1 win, 2: player 2 win
     status = 0
+    # previous move to reach this board
     move = []
+    # captures
+    captures = [0, 0]
+
 
     def __init__(self, board=None):
         self.board = pente.make_board(7)
@@ -21,6 +34,10 @@ class Board:
                     self.board[i][j] = board.board[i][j]
 
     def getEmptyPositions(self):
+        """
+        Get all empty positons on the board
+        :return: all empty positions with cols and rows
+        """
         emptyPosition = []
         for i in range(len(self.board)):
             for j in range(len(self.board[i])):
@@ -29,22 +46,39 @@ class Board:
         return emptyPosition
 
     def performMove(self, p, playerNo):
+        """
+        Call the pente game to perform a move
+        :param p: the position of move that we want to perform
+        :param playerNo: the player that perform the move, either 1 or 2
+        """
         captures = [0, 0]
         # (game, captures, 1, 0, 6)
-        game, captures, win = pente.update_board(self.board, captures, playerNo, p[0], p[1])
-        # print(captures)
+        game, captures, win = pente.update_board(self.board, self.captures, playerNo, p[0], p[1])
+        # print('c', captures)
         self.board = game
         self.status = win
         self.move = copy.deepcopy(p)
+        self.captures = captures
 
     def printBoard(self):
+        """
+        Print the current board for display purpose
+        """
         pente.print_board(self.board)
 
 
 class State:
+    """
+    The state class for holding current board, and other score information
+    """
+
+    # current board
     board = Board()
+    # current player
     playerNo = 0
+    # visit count of this state
     visitCount = 0
+    # win score of this state
     winScore = 0
 
     def __init__(self, state=None):
@@ -53,8 +87,13 @@ class State:
             self.playerNo = state.playerNo
             self.visitCount = state.visitCount
             self.winScore = state.winScore
+            self.captures = copy.deepcopy(state.captures)
 
     def getAllPossibleStates(self):
+        """
+        Get all possible states based on the current board
+        :return: a list of possible states
+        """
         # constructs a list of all possible states from current state
         possibleStates = []
         availablePosition = self.board.getEmptyPositions()
@@ -67,11 +106,23 @@ class State:
         return possibleStates
 
     def simulatePlay(self, heur):
-        # get a list of all possible positions on the board and play a random move
-        # print('------------', self.playerNo)
-        # self.board.printBoard()
+        """
+        Simulate a play by referring to the heuristics
+        :param heur: the heuristic function we want to use
+        :return:
+        """
+        print('------------', self.playerNo, 'captures: ', self.board.captures)
+        self.board.printBoard()
         if heur == 'conP':
             board, heuristics, score = ConsecutivePieces.calculate_streaks(self.board.board, self.playerNo)
+        if heur == 'mcs':
+            board, heuristics, score = MidControl.mid_control_streaks(self.board.board, self.playerNo)
+        if heur == 'mcp':
+            board, heuristics, score = MidControl.mid_control_pieces(self.board.board, self.playerNo)
+        if heur == 'capP':
+            board, heuristics, score = CapturedPieces.captured_pieces(self.board.board, self.board.captures, self.playerNo)
+        if heur == 'mom':
+            board, heuristics, score = Momentum.MCTS_momentum(self.board.board, self.playerNo)
         maxnum = 0
         maxnode = []
         for i in range(len(heuristics)):
@@ -87,22 +138,44 @@ class State:
                 selectRandom = random.randrange(len(availablePositions))
                 self.board.performMove(availablePositions[selectRandom], self.playerNo)
 
+
     def togglePlayer(self):
+        """
+        Toggle the player
+        """
         self.playerNo = 3 - self.playerNo
 
     def incrementVisit(self):
+        """
+        Increase the visit count
+        """
         self.visitCount += 1
 
     def getOpponent(self):
+        """
+        Get the opponent of current player
+        :return: the opponent player
+        """
         return 3 - self.playerNo
 
     def addScore(self, add):
+        """
+        Add score to the win score
+        :param add: the added score
+        """
         self.winScore += add
 
 
 class Node:
+    """
+    The node class to hold the state
+    """
+
+    # The state
     state = State()
+    # The parent of this node
     parent = None
+    # Children of this node
     childArray = []
 
     def __init__(self, node=None):
@@ -112,14 +185,25 @@ class Node:
             self.childArray = copy.deepcopy(node.childArray)
 
     def getRandomChildNode(self):
+        """
+        Get a random child node
+        :return: a random child node of current node
+        """
         selectRandom = random.randrange(len(self.childArray))
         return self.childArray[selectRandom]
 
     def printNode(self):
+        """
+        Pint a node, for debug purpose
+        """
         self.state.board.printBoard()
         print('child', len(self.childArray))
 
     def getChildWithMaxScore(self):
+        """
+        Get the child of the max visit count of current node
+        :return: child of the max visit count
+        """
         children = []
         for c in self.childArray:
             children.append({'count': c.state.visitCount, 'n': c})
@@ -128,12 +212,20 @@ class Node:
 
 
 class MCTS:
-    level = 3
+    """
+    The MCTS class
+    """
+    # The opponent
     opponent = 0
+    # Root node of the tree
     root = Node()
 
-    # TODO: Check this
     def selectPromisingNode(self, rootNode):
+        """
+        Get the best leaf with the best UCT score
+        :param rootNode: the root node
+        :return: the best leaf node
+        """
         node = rootNode
         while len(node.childArray) != 0:
             # print('count', len(node.childArray))
@@ -155,15 +247,25 @@ class MCTS:
             node.childArray.append(newNode)
 
     def backPropagation(self, nodeToExplore, playerNo):
+        """
+        Perform back propagation to add the value back to the nodes
+        :param nodeToExplore: the node we explored
+        :param playerNo: current player
+        """
         tempNode = nodeToExplore
         while tempNode is not None:
             tempNode.state.incrementVisit()
             if tempNode.state.playerNo == playerNo:
-                tempNode.state.addScore(1)
+                tempNode.state.addScore(10)
             tempNode = tempNode.parent
 
-    # TODO: update with the heuristic implementation
     def simulatePlayout(self, node, heur):
+        """
+        Simulate the playout
+        :param node: the current node
+        :param heur: the heurstic function
+        :return: the baord status - which player win?
+        """
         tempNode = Node(node)
         tempState = tempNode.state
         boardStatus = tempState.board.status
@@ -178,12 +280,20 @@ class MCTS:
         return boardStatus
 
     def findNextMove(self, board, playerNo, heur):
+        """
+        The main MCTS function, find the next move by the MCTS using selection, expansion, simulation and backpropagation.
+        :param board: the current board
+        :param playerNo: the current player
+        :param heur: the heuristic function we want to use
+        :return: the next estimated best move
+        """
         self.opponent = 3 - playerNo
-        self.root.state.board = board
+        self.root.state.board = copy.deepcopy(board)
         self.root.state.playerNo = self.opponent
         # TODO: define number of loop times or based on given time limitation
         for i in range(3):
-            # Slection
+            # print('simulateion ', i)
+            # Selection
             promisingNode = self.selectPromisingNode(self.root)
             # print('promising', promisingNode.state.board.printBoard())
             # Expansion
@@ -227,26 +337,41 @@ def bestUCT(node):
     uctlist = sorted(uctlist, key=lambda d: d['uct'], reverse=True)
     return uctlist[0]['node']
 
-def performSearch(mcts, board, player, heur):
-    move, board = mcts.findNextMove(board, player, heur)
-    return move, board
 
+def performGame(heur1, heur2):
+    # performGame between two heuristics
 
-if __name__ == '__main__':
-    board = Board()
     game = pente.make_board(7)
     player = 1
-    totalMove = 7 * 7
     mcts = MCTS()
     i = 0
+    captures = [0, 0]
+
+    # Place the very first at the middle
+    print(i)
+    i += 1
+    print('player ', player)
+    middle = math.floor(7/2)
+    move = [middle, middle]
+    print('move', move)
+    game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
+    print('captures', captures)
+    player = 3 - player
+    pente.print_board(game)
+
+    board = Board()
+    board.board = game
+
     while True:
         print(i)
         i += 1
         print('player ', player)
-        move, board = performSearch(mcts, board, player, 'conP')
+        if i % 2 != 0:
+            move, board = mcts.findNextMove(board, player, heur1)
+        else:
+            move, board = mcts.findNextMove(board, player, heur2)
         # board.printBoard()
         print('move', move)
-        captures = [0, 0]
         game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
         print('captures', captures)
         pente.print_board(game)
@@ -256,3 +381,11 @@ if __name__ == '__main__':
             print(win, "win!!!!!")
             break
         player = 3 - player
+        board = Board()
+        board.board = game
+
+
+
+if __name__ == '__main__':
+    hList = ['conP', 'mcs', 'mcp', 'capP', 'mom']
+    performGame('mom', 'mom')
