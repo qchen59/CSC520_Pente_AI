@@ -72,10 +72,6 @@ def calculate_streaks(board, turn):
                             else:
                                 heuristics[i + row_change][j + col_change] = count + (right_node % 2)
 
-    # print("Heuristics")
-    # for i in heuristics:
-    #     print(*i, sep=' ')
-
     score = 0
     for i in range(size):
         for j in range(size):
