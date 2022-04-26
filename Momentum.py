@@ -82,6 +82,14 @@ def momentum_heuristic(board, turn):
 
 
 def MCTS_momentum(board, turn):
+    """
+    Uses the 'Momentum' method to work out the heuristic values that are filled in to a board for use in MCTS
+
+    :param board: a Pente game board
+    :param turn: either 1 or 2, depending on if the 1st or 2nd player is wanting to place a piece
+
+    :return: current board, board with heuristic values filled in, heuristic score
+    """
     base = momentum_heuristic(board, turn)
 
     new_board = []
