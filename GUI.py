@@ -88,6 +88,9 @@ class Window(QWidget):
         size = self.sizeWidget.text()
         self.boardSize = int(size)
         self.clear_layout(self.grid)
+        self.game = pente.make_board(self.boardSize)
+        self.monteCarlo = MCTS.MCTS(self.boardSize)
+        self.board = MCTS.Board(self.boardSize)
         self.create_grid(self.boardSize)
 
     def place_stone(self):
