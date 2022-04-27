@@ -11,6 +11,7 @@ import MidControl
 import Momentum
 import time
 
+timeout = 0.05
 
 class Board:
     """
@@ -336,7 +337,7 @@ class MCTS:
         self.root.state.board = copy.deepcopy(board)
         self.root.state.playerNo = self.opponent
 
-        timeout = 0.01
+
         timeout_start = time.time()
         while time.time() < timeout_start + timeout:
             # print('simulation ', i)
@@ -492,17 +493,17 @@ if __name__ == '__main__':
         for hh in hList:
             hw = 0
             if hh != h:
-                for i in range(5):
+                for i in range(2):
                     win = performGame(h, hh, 11)
                     if win == 1:
                         hw += 1
-                for i in range(5):
+                for i in range(2):
                     win = performGame(hh, h, 11)
                     if win == 2:
                         hw += 1
             print('      ', hh, hw)
             tw += hw
-        print('win rate', tw, tw/90)
+        print('win rate', tw)
 
     # performGametest('cpc', 'cpc', 11)
 
