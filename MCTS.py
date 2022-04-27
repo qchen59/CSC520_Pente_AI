@@ -43,6 +43,7 @@ class Board:
             for j in range(len(self.board[i])):
                 if self.board[i][j] == 0:
                     emptyPosition.append([i, j])
+        # print('empty', emptyPosition)
         return emptyPosition
 
     def performMove(self, p, playerNo):
@@ -232,6 +233,9 @@ class MCTS:
         :return: the best leaf node
         """
         node = rootNode
+        # print('rt - pr', node.state.board.board)
+        # print('rt - pr', len(node.childArray))
+        #
         while len(node.childArray) != 0:
             # print('count', len(node.childArray))
             node = bestUCT(node)
@@ -293,16 +297,20 @@ class MCTS:
         :param heur: the heuristic function we want to use
         :return: the next estimated best move
         """
+        # print('input', board.board)
         self.opponent = 3 - playerNo
         # print(playerNo, 'select?', board.board)
+        self.root = Node(self.size)
+        self.root.childArray = []
         self.root.state.board = copy.deepcopy(board)
         self.root.state.playerNo = self.opponent
+
         # TODO: define number of loop times or based on given time limitation
-        for i in range(3):
-            print('simulation ', i)
+        for i in range(5):
+            # print('simulation ', i)
             # Selection
             promisingNode = self.selectPromisingNode(self.root)
-            # print('promising', promisingNode.state.board.printBoard())
+            # print('promising', promisingNode.state.board.board)
             # Expansion
             if promisingNode.state.board.status == 0:
                 self.expandNode(promisingNode)
@@ -321,8 +329,10 @@ class MCTS:
             # print('end', nodeToExplore.childArray[0].childArray)
 
         winnerNode = self.root.getChildWithMaxScore()
-        self.root = winnerNode
-
+        # print('root', self.root.state.board.board)
+        # print('cd', self.root.childArray[0].state.board.board)
+        # print('win', winnerNode.state.board.board)
+        # self.root = winnerNode
         return winnerNode.state.board.move, winnerNode.state.board
 
 
@@ -340,6 +350,8 @@ def bestUCT(node):
         nodeWinScore = n.state.winScore
         if nodeVisit == 0:
             nodeVisit = 1
+        if totalVisit == 0:
+            totalVisit = 1
         # print('log', nodeVisit, totalVisit)
         uct = (nodeWinScore / nodeVisit) + 1.41 * math.sqrt(math.log(totalVisit) / nodeVisit)
         uctlist.append({'uct': uct, 'node': n})
