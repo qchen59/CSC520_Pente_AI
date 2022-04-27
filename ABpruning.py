@@ -22,7 +22,7 @@ ninfi = -sys.maxsize
 # 9 -- Momentum + mid_control_pieces
 # 10 -- mid_control_streaks + mid_control_pieces
 numberOfHeuristic = 5
-
+bigDepth = 2
 Combinations = {
     1:{1:1, 2:1, 3:"player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces"},
     2:{1:1, 2:2, 3:"player 1 -- ConsecutivePieces, player 2 -- CapturedPieces"},
@@ -168,9 +168,9 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta, size):
 
     :return: heuristic score, board object
     """
-
+    global bigDepth
     # Terminate conditions
-    if depth == 2:   # The depth of alpha beta
+    if depth == bigDepth:   # The depth of alpha beta
         tboard, heuristics, score = getHeu(board.board, player, board.captures)
         # print(score)
         return score, board
