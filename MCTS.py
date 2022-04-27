@@ -9,6 +9,7 @@ import ConsecutivePieces
 import CapturedPieces
 import MidControl
 import Momentum
+import time
 
 
 class Board:
@@ -90,6 +91,15 @@ class State:
             self.winScore = state.winScore
             self.captures = copy.deepcopy(state.captures)
 
+    def addH(self, h1, h2):
+        # print(h1)
+        for i in range(len(h1)):
+            for j in range(len(h2)):
+                if h1[i][j] != 1 and h1[i][j] != 2:
+                    h1[i][j] = h1[i][j] + h2[i][j]
+        # print(h1)
+        return h1
+
     def getAllPossibleStates(self):
         """
         Get all possible states based on the current board
@@ -125,6 +135,27 @@ class State:
             board, heuristics, score = CapturedPieces.captured_pieces(self.board.board, self.board.captures, self.playerNo)
         if heur == 'mom':
             board, heuristics, score = Momentum.MCTS_momentum(self.board.board, self.playerNo)
+        if heur == 'cpc':
+            board, h1, score = ConsecutivePieces.calculate_streaks(self.board.board, self.playerNo)
+            board, h2, score = CapturedPieces.captured_pieces(self.board.board, self.board.captures, self.playerNo)
+            heuristics = self.addH(h1, h2)
+        if heur == 'mc':
+            board, h1, score = Momentum.MCTS_momentum(self.board.board, self.playerNo)
+            board, h2, score = CapturedPieces.captured_pieces(self.board.board, self.board.captures, self.playerNo)
+            heuristics = self.addH(h1, h2)
+        if heur == 'cpp':
+            board, h1, score = ConsecutivePieces.calculate_streaks(self.board.board, self.playerNo)
+            board, h2, score = MidControl.mid_control_pieces(self.board.board, self.playerNo)
+            heuristics = self.addH(h1, h2)
+        if heur == 'mp':
+            board, h1, score = Momentum.MCTS_momentum(self.board.board, self.playerNo)
+            board, h2, score = MidControl.mid_control_pieces(self.board.board, self.playerNo)
+            heuristics = self.addH(h1, h2)
+        if heur == 'mcsp':
+            board, h1, score = MidControl.mid_control_streaks(self.board.board, self.playerNo)
+            board, h2, score = MidControl.mid_control_pieces(self.board.board, self.playerNo)
+            heuristics = self.addH(h1, h2)
+
         maxnum = 0
         maxnode = []
         for i in range(len(heuristics)):
@@ -305,8 +336,9 @@ class MCTS:
         self.root.state.board = copy.deepcopy(board)
         self.root.state.playerNo = self.opponent
 
-        # TODO: define number of loop times or based on given time limitation
-        for i in range(5):
+        timeout = 0.01
+        timeout_start = time.time()
+        while time.time() < timeout_start + timeout:
             # print('simulation ', i)
             # Selection
             promisingNode = self.selectPromisingNode(self.root)
@@ -369,6 +401,53 @@ def performGame(heur1, heur2, boardSize):
     captures = [0, 0]
 
     # Place the very first at the middle
+    # print(i)
+    i += 1
+    # print('player ', player)
+    middle = math.floor(boardSize/2)
+    move = [middle, middle]
+    # print('move', move)
+    game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
+    # print('captures', captures)
+    player = 3 - player
+    # pente.print_board(game)
+
+    board = Board(boardSize)
+    board.board = game
+
+    while True:
+        # print(i)
+        i += 1
+        # print('player ', player)
+        if i % 2 != 0:
+            move, board = mcts.findNextMove(board, player, heur1)
+        else:
+            move, board = mcts.findNextMove(board, player, heur2)
+        # board.printBoard()
+        # print('move', move)
+        game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
+        # print('captures', captures)
+        # pente.print_board(game)
+        # board, heuristics, score = AdjacentPieces.calculate_heuristic(game, 3 - player)
+        # print('sc', heuristics)
+        if win != 0:
+            # print(win, "win!!!!!")
+            return win
+        player = 3 - player
+        board = Board(boardSize)
+        board.board = game
+        board.captures = copy.deepcopy(captures)
+
+def performGametest(heur1, heur2, boardSize):
+    # performGame between two heuristics
+
+    game = pente.make_board(boardSize)
+    player = 1
+    mcts = MCTS(boardSize)
+    i = 0
+    captures = [0, 0]
+
+    # Place the very first at the middle
     print(i)
     i += 1
     print('player ', player)
@@ -391,16 +470,13 @@ def performGame(heur1, heur2, boardSize):
             move, board = mcts.findNextMove(board, player, heur1)
         else:
             move, board = mcts.findNextMove(board, player, heur2)
-        # board.printBoard()
         print('move', move)
         game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
         print('captures', captures)
         pente.print_board(game)
-        # board, heuristics, score = AdjacentPieces.calculate_heuristic(game, 3 - player)
-        # print('sc', heuristics)
         if win != 0:
             print(win, "win!!!!!")
-            break
+            return win
         player = 3 - player
         board = Board(boardSize)
         board.board = game
@@ -409,6 +485,27 @@ def performGame(heur1, heur2, boardSize):
 
 
 if __name__ == '__main__':
-    hList = ['conP', 'mcs', 'mcp', 'capP', 'mom']
-    performGame('capP', 'capP', 7)
+    hList = ['conP', 'mcs', 'mcp', 'capP', 'mom', 'cpc', 'mc', 'cpp', 'mp', 'mcsp']
+    for h in hList:
+        print(h)
+        tw = 0
+        for hh in hList:
+            hw = 0
+            if hh != h:
+                for i in range(5):
+                    win = performGame(h, hh, 11)
+                    if win == 1:
+                        hw += 1
+                for i in range(5):
+                    win = performGame(hh, h, 11)
+                    if win == 2:
+                        hw += 1
+            print('      ', hh, hw)
+            tw += hw
+        print('win rate', tw, tw/90)
+
+    # performGametest('cpc', 'cpc', 11)
+
+
+
 
