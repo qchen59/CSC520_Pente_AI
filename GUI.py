@@ -4,7 +4,7 @@ import MCTS
 import copy
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
-    QApplication, QGridLayout, QPushButton, QWidget, QSizePolicy,
+    QApplication, QGridLayout, QPushButton, QWidget, QSizePolicy, QMessageBox,
     QLineEdit, QFormLayout, QVBoxLayout, QStackedLayout, QComboBox, QHBoxLayout
 )
 
@@ -49,6 +49,12 @@ class Window(QWidget):
                              "Momentum + Mid Control Pieces", "Mid Control Streaks + Mid Control Pieces"])
         self.algorithmsDropDown.addWidget(algorithms)
         self.heuristicsDropDown.addWidget(heuristics)
+
+        # A popup message to show after a win occur
+        self.popup = QMessageBox()
+        self.popup.setWindowTitle("Winner Winner Chicken Dinner!")
+        self.popup.setStandardButtons(QMessageBox.Retry)
+        self.popup.buttonClicked.connect(self.win_popup)
 
         # Adding widgets to layouts
         self.topHorizontal.addLayout(self.sizeForm)
@@ -109,10 +115,10 @@ class Window(QWidget):
         button.setStyleSheet("background-color:#ccd4f2;font-weight: bold;color: #000000;")
 
         self.game, self.captures, win = pente.update_board(self.game, self.captures, 1, row, column)
+        self.check_win(win)
         print("Game board after player 1 placed the stone")
         print(self.game)
 
-        # self.monteCarlo = MCTS.MCTS()
         self.board = MCTS.Board(self.boardSize)
         self.board.board = self.game
         self.board.captures = copy.deepcopy(self.captures)
@@ -122,6 +128,7 @@ class Window(QWidget):
         row = move[0]
         column = move[1]
         self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, row, column)
+        self.check_win(win)
 
         print("Game board after player 2 placed the stone")
         print(self.game)
@@ -134,6 +141,28 @@ class Window(QWidget):
         button = self.grid.itemAt(ai_button_index).widget()
         button.setText('2')
         button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
+
+    def check_win(self, win):
+        """
+        Checks whether a win condition is met. If yes, shows the winner in a pop-up window along with a
+        button to play again.
+
+        :param win: an integer indicating either player 1 won,  player 2 won or game still not over.
+        """
+        if win == 0:
+            return
+        self.popup.setText("Player " + str(win) + " has won!!!")
+        self.popup.show()
+
+    def win_popup(self):
+        """
+        Runs when a user clicks on 'Retry' after game completion.
+        """
+        self.clear_layout(self.grid)
+        self.game = pente.make_board(self.boardSize)
+        self.monteCarlo = MCTS.MCTS(self.boardSize)
+        self.board = MCTS.Board(self.boardSize)
+        self.create_grid(self.boardSize)
 
     def clear_layout(self, layout):
         """
