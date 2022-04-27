@@ -1,5 +1,6 @@
 import sys
 import pente
+import MCTS
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QApplication, QGridLayout, QPushButton, QWidget, QSizePolicy,
@@ -60,7 +61,10 @@ class Window(QWidget):
         self.create_grid(self.boardSize)
         self.setLayout(self.mainLayout)
 
+        # Creating a pente board and MCTS objects
         self.game = pente.make_board(self.boardSize)
+        self.monteCarlo = MCTS.MCTS()
+        self.board = MCTS.Board()
 
     def create_grid(self, size):
         """
@@ -97,19 +101,33 @@ class Window(QWidget):
         column = position[1]
 
         button.setEnabled(False)
-        # button.setText('1')
-        #
-        # game, captures, win = pente.update_board(self.game, self.captures, 1, row, column)
-        # game, captures, win = pente.update_board(self.game, self.captures, 2, 3, 5)
+        button.setText('1')
+        button.setStyleSheet("background-color:#ccd4f2;font-weight: bold;color: #000000;")
 
-        if self.turn == 1:
-            button.setText('1')
-            button.setStyleSheet("background-color:#ccd4f2;font-weight: bold;color: #000000;")
-            self.turn = 2
-        else:
-            button.setText('2')
-            button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
-            self.turn = 1
+        self.game, self.captures, win = pente.update_board(self.game, self.captures, 1, row, column)
+        print("Game board after player 1 placed the stone")
+        print(self.game)
+
+        # self.monteCarlo = MCTS.MCTS()
+        self.board = MCTS.Board()
+        self.board.board = self.game
+        move, board = self.monteCarlo.findNextMove(self.board, 2, "conP")
+        print("MCTS Selected Next Move For Player 2: " + str(move))
+
+        row = move[0]
+        column = move[1]
+        self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, row, column)
+
+        print("Game board after player 2 placed the stone")
+        print(self.game)
+
+        self.board = MCTS.Board()
+        self.board.board = self.game
+
+        ai_button_index = self.boardSize * row + column
+        button = self.grid.itemAt(ai_button_index).widget()
+        button.setText('2')
+        button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
 
     def clear_layout(self, layout):
         """
