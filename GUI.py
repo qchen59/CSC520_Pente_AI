@@ -1,6 +1,7 @@
 import sys
 import pente
 import MCTS
+import ABpruning
 import copy
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
@@ -40,15 +41,15 @@ class Window(QWidget):
         self.setSizeButton.clicked.connect(self.set_size)
 
         # Dropdown definitions for algorithms and heuristics
-        algorithms = QComboBox()
-        heuristics = QComboBox()
-        algorithms.addItems(["Alpha-Beta", "Monte Carlo"])
-        heuristics.addItems(["Consecutive Pieces", "Mid Control Streaks", "Mid Control Pieces",
+        self.algorithms = QComboBox()
+        self.heuristics = QComboBox()
+        self.algorithms.addItems(["Alpha-Beta", "Monte Carlo"])
+        self.heuristics.addItems(["Consecutive Pieces", "Mid Control Streaks", "Mid Control Pieces",
                              "Captured Pieces", "Momentum", "Consecutive Pieces + Captured Pieces",
                              "Momentum + Captured Pieces", "Consecutive Pieces + Mid Control Pieces",
                              "Momentum + Mid Control Pieces", "Mid Control Streaks + Mid Control Pieces"])
-        self.algorithmsDropDown.addWidget(algorithms)
-        self.heuristicsDropDown.addWidget(heuristics)
+        self.algorithmsDropDown.addWidget(self.algorithms)
+        self.heuristicsDropDown.addWidget(self.heuristics)
 
         # A popup message to show after a win occur
         self.popup = QMessageBox()
@@ -68,10 +69,14 @@ class Window(QWidget):
         self.create_grid(self.boardSize)
         self.setLayout(self.mainLayout)
 
-        # Creating a pente board and MCTS objects
+        # Creating a pente board, MCTS objects, and AB objects
         self.game = pente.make_board(self.boardSize)
         self.monteCarlo = MCTS.MCTS(self.boardSize)
         self.board = MCTS.Board(self.boardSize)
+        self.abBoard = ABpruning.Board(self.boardSize)
+        self.heuristicsNames = ["conP", "mcs", "mcp", "capP", "mom", "cpc", "mc", "cpp", "mp", "mcsp"]
+        self.pos_inf = sys.maxsize
+        self.neg_inf = -sys.maxsize
 
     def create_grid(self, size):
         """
@@ -93,11 +98,7 @@ class Window(QWidget):
         """
         size = self.sizeWidget.text()
         self.boardSize = int(size)
-        self.clear_layout(self.grid)
-        self.game = pente.make_board(self.boardSize)
-        self.monteCarlo = MCTS.MCTS(self.boardSize)
-        self.board = MCTS.Board(self.boardSize)
-        self.create_grid(self.boardSize)
+        self.win_popup()                       # Calling this as this method does what we want for this scenario as well
 
     def place_stone(self):
         """
@@ -118,21 +119,39 @@ class Window(QWidget):
         self.check_win(win)
 
         if not self.popup.isVisible():
-            self.board = MCTS.Board(self.boardSize)
-            self.board.board = self.game
-            self.board.captures = copy.deepcopy(self.captures)
-            move, board = self.monteCarlo.findNextMove(self.board, 2, "conP")
+            algorithm = self.algorithms.currentText()
+            heuristic = self.heuristics.currentIndex()
 
-            row = move[0]
-            column = move[1]
-            self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, row, column)
-            self.check_win(win)
+            if algorithm == "Monte Carlo":
+                self.board = MCTS.Board(self.boardSize)
+                self.board.board = self.game
+                self.board.captures = copy.deepcopy(self.captures)
+                move, board = self.monteCarlo.findNextMove(self.board, 2, self.heuristicsNames[heuristic])
 
-            self.board = MCTS.Board(self.boardSize)
-            self.board.board = self.game
-            self.board.captures = copy.deepcopy(self.captures)
+                ai_row = move[0]
+                ai_column = move[1]
+                self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, ai_row, ai_column)
+                self.check_win(win)
 
-            ai_button_index = self.boardSize * row + column
+                self.board = MCTS.Board(self.boardSize)
+                self.board.board = self.game
+                self.board.captures = copy.deepcopy(self.captures)
+            elif algorithm == "Alpha-Beta":
+                self.abBoard = ABpruning.Board(self.boardSize)
+                self.abBoard.board = self.game
+                self.abBoard.captures = copy.deepcopy(self.captures)
+                ABpruning.numberOfHeuristic = heuristic + 1
+                # ABpruning.bigDepth = 4
+                value, result = ABpruning.minmax(0, self.abBoard, True, 2, self.neg_inf, self.pos_inf, self.boardSize)
+                move = result.moves[0]['move']
+                ai_row = move[0]
+                ai_column = move[1]
+                self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, ai_row, ai_column)
+                self.check_win(win)
+            else:
+                raise Exception("Invalid Algorithm")
+
+            ai_button_index = self.boardSize * ai_row + ai_column
             button = self.grid.itemAt(ai_button_index).widget()
             button.setText('2')
             button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
@@ -157,12 +176,12 @@ class Window(QWidget):
         self.game = pente.make_board(self.boardSize)
         self.monteCarlo = MCTS.MCTS(self.boardSize)
         self.board = MCTS.Board(self.boardSize)
+        self.abBoard = ABpruning.Board(self.boardSize)
         self.create_grid(self.boardSize)
 
     def clear_layout(self, layout):
         """
-        Clears all elements from an already drawn layout. This method would come in handy when
-        implementing set_size method.
+        Clears all elements from an already drawn layout.
 
         :param layout: the layout that needs elements removed
         """
