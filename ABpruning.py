@@ -238,7 +238,7 @@ def performGame(heur1, heur2, boardSize):
     :param heur2: the heuristic for the second player, can be 1 - 10(see the numberOfHeuristic variable)
     :param boardSize: the size for the pente board(x by x)
 
-    :return: 1 if player 1 wins or 2 if player 2 wins
+    :return: 1 if player 1 wins or 2 if player 2 wins, board of the final round
     """
 
 
