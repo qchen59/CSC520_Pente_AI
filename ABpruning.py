@@ -64,8 +64,8 @@ class Board:
     moves = []
 
     # initialize the board
-    def __init__(self, board=None):
-        self.board = pente.make_board(11)
+    def __init__(self, size, board=None):
+        self.board = pente.make_board(size)
         if board != None:
             for i in range(len(board.board)):
                 for j in range(len(board.board[0])):
@@ -155,7 +155,7 @@ def getHeu(board, player, capturess):
         tboard, heuristics, score1 = MidControl.mid_control_pieces(board, player)
         return tboard, heuristics, score1+score
 
-def minmax(depth, board, maximizingPlayer, player, alpha, beta):
+def minmax(depth, board, maximizingPlayer, player, alpha, beta, size):
     """
     The implementation of the alpha beta pruning.
 
@@ -194,12 +194,12 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta):
     if maximizingPlayer:
         best = ninfi
         for a in childArray:
-            temp = Board(board)
+            temp = Board(size, board)
             temp.captures = copy.deepcopy(board.captures)
             temp.performMove(a, player)
             temp.moves = copy.deepcopy(board.moves)
             temp.moves.append({'player': player, 'move': a})
-            val, board2 = minmax(depth + 1, temp, False, player, alpha, beta)
+            val, board2 = minmax(depth + 1, temp, False, player, alpha, beta, size)
             if val > best:
                 best = val
                 result = board2
@@ -213,12 +213,12 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta):
         best = pinfi
         childArray = board.getEmptyPositions()
         for a in childArray:
-            temp = Board(board)
+            temp = Board(size, board)
             temp.captures = copy.deepcopy(board.captures)
             temp.performMove(a, 3 - player)
             temp.moves = copy.deepcopy(board.moves)
             temp.moves.append({'player': 3 - player, 'move': a})
-            val, board2 = minmax(depth + 1, temp, True, player, alpha, beta)
+            val, board2 = minmax(depth + 1, temp, True, player, alpha, beta, size)
             if val < best:
                 best = val
                 result = board2
@@ -263,7 +263,7 @@ def performGame(heur1, heur2, boardSize):
     player = 3 - player
     # pente.print_board(game)
 
-    board = Board()
+    board = Board(boardSize)
     board.board = game
 
     while True:
@@ -273,11 +273,11 @@ def performGame(heur1, heur2, boardSize):
         # Player 1
         if i % 2 != 0:
             numberOfHeuristic = heur1
-            v, result = minmax(0, board, True, player, ninfi, pinfi)
+            v, result = minmax(0, board, True, player, ninfi, pinfi, boardSize)
         # Player 2
         else:
             numberOfHeuristic = heur2
-            v, result = minmax(0, board, True, player, ninfi, pinfi)
+            v, result = minmax(0, board, True, player, ninfi, pinfi, boardSize)
         # board.printBoard()
         move = result.moves[0]['move']
         # print('move', move)
@@ -291,7 +291,7 @@ def performGame(heur1, heur2, boardSize):
             # print(numberOfHeuristic)
             return win, game
         player = 3 - player
-        board = Board()
+        board = Board(boardSize)
         board.board = game
         board.captures = copy.deepcopy(captures)
 
