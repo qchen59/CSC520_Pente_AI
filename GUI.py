@@ -1,6 +1,7 @@
 import sys
 import pente
 import MCTS
+import copy
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QApplication, QGridLayout, QPushButton, QWidget, QSizePolicy,
@@ -63,8 +64,8 @@ class Window(QWidget):
 
         # Creating a pente board and MCTS objects
         self.game = pente.make_board(self.boardSize)
-        self.monteCarlo = MCTS.MCTS()
-        self.board = MCTS.Board()
+        self.monteCarlo = MCTS.MCTS(self.boardSize)
+        self.board = MCTS.Board(self.boardSize)
 
     def create_grid(self, size):
         """
@@ -109,8 +110,9 @@ class Window(QWidget):
         print(self.game)
 
         # self.monteCarlo = MCTS.MCTS()
-        self.board = MCTS.Board()
+        self.board = MCTS.Board(self.boardSize)
         self.board.board = self.game
+        self.board.captures = copy.deepcopy(self.captures)
         move, board = self.monteCarlo.findNextMove(self.board, 2, "conP")
         print("MCTS Selected Next Move For Player 2: " + str(move))
 
@@ -121,8 +123,9 @@ class Window(QWidget):
         print("Game board after player 2 placed the stone")
         print(self.game)
 
-        self.board = MCTS.Board()
+        self.board = MCTS.Board(self.boardSize)
         self.board.board = self.game
+        self.board.captures = copy.deepcopy(self.captures)
 
         ai_button_index = self.boardSize * row + column
         button = self.grid.itemAt(ai_button_index).widget()

@@ -26,8 +26,8 @@ class Board:
     captures = [0, 0]
 
 
-    def __init__(self, board=None):
-        self.board = pente.make_board(7)
+    def __init__(self, size, board=None):
+        self.board = pente.make_board(size)
         if board != None:
             for i in range(len(board.board)):
                 for j in range(len(board.board[0])):
@@ -72,8 +72,6 @@ class State:
     The state class for holding current board, and other score information
     """
 
-    # current board
-    board = Board()
     # current player
     playerNo = 0
     # visit count of this state
@@ -81,7 +79,9 @@ class State:
     # win score of this state
     winScore = 0
 
-    def __init__(self, state=None):
+    def __init__(self, size, state=None):
+        self.board = Board(size)
+        self.size = size
         if state is not None:
             self.board = Board(state.board)
             self.playerNo = state.playerNo
@@ -98,8 +98,9 @@ class State:
         possibleStates = []
         availablePosition = self.board.getEmptyPositions()
         for p in availablePosition:
-            newState = State()
-            newState.board = Board(self.board)
+            newState = State(self.size)
+            newState.board = Board(self.size, self.board)
+            newState.board.captures = copy.deepcopy(self.board.captures)
             newState.playerNo = 3 - self.playerNo
             newState.board.performMove(p, newState.playerNo)
             possibleStates.append(newState)
@@ -111,8 +112,8 @@ class State:
         :param heur: the heuristic function we want to use
         :return:
         """
-        print('------------', self.playerNo, 'captures: ', self.board.captures)
-        self.board.printBoard()
+        # print('------------', self.playerNo, 'captures: ', self.board.captures)
+        # self.board.printBoard()
         if heur == 'conP':
             board, heuristics, score = ConsecutivePieces.calculate_streaks(self.board.board, self.playerNo)
         if heur == 'mcs':
@@ -171,14 +172,13 @@ class Node:
     The node class to hold the state
     """
 
-    # The state
-    state = State()
     # The parent of this node
     parent = None
     # Children of this node
     childArray = []
 
-    def __init__(self, node=None):
+    def __init__(self, size, node=None):
+        self.state = State(size)
         if node is not None:
             self.state = copy.deepcopy(node.state)
             self.parent = copy.deepcopy(node.parent)
@@ -206,6 +206,7 @@ class Node:
         """
         children = []
         for c in self.childArray:
+            # print('child', c.state.board.board)
             children.append({'count': c.state.visitCount, 'n': c})
         children = sorted(children, key=lambda d: d['count'], reverse=True)
         return children[0]['n']
@@ -217,8 +218,12 @@ class MCTS:
     """
     # The opponent
     opponent = 0
-    # Root node of the tree
-    root = Node()
+    # board size
+    size = 7
+
+    def __init__(self, size):
+        self.size = size
+        self.root = Node(self.size)
 
     def selectPromisingNode(self, rootNode):
         """
@@ -239,7 +244,8 @@ class MCTS:
         '''
         possibleStates = node.state.getAllPossibleStates()
         for state in possibleStates:
-            newNode = Node()
+            # print(state.board.board)
+            newNode = Node(self.size)
             newNode.state = state
             newNode.parent = node
             newNode.state.playerNo = node.state.getOpponent()
@@ -264,9 +270,9 @@ class MCTS:
         Simulate the playout
         :param node: the current node
         :param heur: the heurstic function
-        :return: the baord status - which player win?
+        :return: the board status - which player win?
         """
-        tempNode = Node(node)
+        tempNode = Node(self.size, node)
         tempState = tempNode.state
         boardStatus = tempState.board.status
         if boardStatus == self.opponent:
@@ -288,17 +294,19 @@ class MCTS:
         :return: the next estimated best move
         """
         self.opponent = 3 - playerNo
+        # print(playerNo, 'select?', board.board)
         self.root.state.board = copy.deepcopy(board)
         self.root.state.playerNo = self.opponent
         # TODO: define number of loop times or based on given time limitation
         for i in range(3):
-            # print('simulateion ', i)
+            print('simulation ', i)
             # Selection
             promisingNode = self.selectPromisingNode(self.root)
             # print('promising', promisingNode.state.board.printBoard())
             # Expansion
             if promisingNode.state.board.status == 0:
                 self.expandNode(promisingNode)
+
             # print('node')
             # promisingNode.childArray[0].printNode()
             # Simulation
@@ -314,6 +322,7 @@ class MCTS:
 
         winnerNode = self.root.getChildWithMaxScore()
         self.root = winnerNode
+
         return winnerNode.state.board.move, winnerNode.state.board
 
 
@@ -338,12 +347,12 @@ def bestUCT(node):
     return uctlist[0]['node']
 
 
-def performGame(heur1, heur2):
+def performGame(heur1, heur2, boardSize):
     # performGame between two heuristics
 
-    game = pente.make_board(7)
+    game = pente.make_board(boardSize)
     player = 1
-    mcts = MCTS()
+    mcts = MCTS(boardSize)
     i = 0
     captures = [0, 0]
 
@@ -351,7 +360,7 @@ def performGame(heur1, heur2):
     print(i)
     i += 1
     print('player ', player)
-    middle = math.floor(7/2)
+    middle = math.floor(boardSize/2)
     move = [middle, middle]
     print('move', move)
     game, captures, win = pente.update_board(game, captures, player, move[0], move[1])
@@ -359,7 +368,7 @@ def performGame(heur1, heur2):
     player = 3 - player
     pente.print_board(game)
 
-    board = Board()
+    board = Board(boardSize)
     board.board = game
 
     while True:
@@ -381,11 +390,13 @@ def performGame(heur1, heur2):
             print(win, "win!!!!!")
             break
         player = 3 - player
-        board = Board()
+        board = Board(boardSize)
         board.board = game
+        board.captures = copy.deepcopy(captures)
 
 
 
 if __name__ == '__main__':
     hList = ['conP', 'mcs', 'mcp', 'capP', 'mom']
-    performGame('mom', 'mom')
+    performGame('capP', 'capP', 7)
+
