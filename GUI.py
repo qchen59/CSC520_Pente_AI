@@ -116,31 +116,26 @@ class Window(QWidget):
 
         self.game, self.captures, win = pente.update_board(self.game, self.captures, 1, row, column)
         self.check_win(win)
-        print("Game board after player 1 placed the stone")
-        print(self.game)
 
-        self.board = MCTS.Board(self.boardSize)
-        self.board.board = self.game
-        self.board.captures = copy.deepcopy(self.captures)
-        move, board = self.monteCarlo.findNextMove(self.board, 2, "conP")
-        print("MCTS Selected Next Move For Player 2: " + str(move))
+        if not self.popup.isVisible():
+            self.board = MCTS.Board(self.boardSize)
+            self.board.board = self.game
+            self.board.captures = copy.deepcopy(self.captures)
+            move, board = self.monteCarlo.findNextMove(self.board, 2, "conP")
 
-        row = move[0]
-        column = move[1]
-        self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, row, column)
-        self.check_win(win)
+            row = move[0]
+            column = move[1]
+            self.game, self.captures, win = pente.update_board(self.game, self.captures, 2, row, column)
+            self.check_win(win)
 
-        print("Game board after player 2 placed the stone")
-        print(self.game)
+            self.board = MCTS.Board(self.boardSize)
+            self.board.board = self.game
+            self.board.captures = copy.deepcopy(self.captures)
 
-        self.board = MCTS.Board(self.boardSize)
-        self.board.board = self.game
-        self.board.captures = copy.deepcopy(self.captures)
-
-        ai_button_index = self.boardSize * row + column
-        button = self.grid.itemAt(ai_button_index).widget()
-        button.setText('2')
-        button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
+            ai_button_index = self.boardSize * row + column
+            button = self.grid.itemAt(ai_button_index).widget()
+            button.setText('2')
+            button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
 
     def check_win(self, win):
         """
