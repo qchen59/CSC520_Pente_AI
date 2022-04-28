@@ -117,6 +117,7 @@ class Window(QWidget):
 
         self.game, self.captures, win = pente.update_board(self.game, self.captures, 1, row, column)
         self.check_win(win)
+        self.updateBoard(self.game)
 
         if not self.popup.isVisible():
             algorithm = self.algorithms.currentText()
@@ -150,11 +151,33 @@ class Window(QWidget):
                 self.check_win(win)
             else:
                 raise Exception("Invalid Algorithm")
+            self.updateBoard(self.game)
+
 
             ai_button_index = self.boardSize * ai_row + ai_column
             button = self.grid.itemAt(ai_button_index).widget()
             button.setText('2')
             button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
+
+    def updateBoard(self, board):
+        for i in range(len(board)):
+            for j in range(len(board[0])):
+                ai_button_index = self.boardSize * i + j
+                button = self.grid.itemAt(ai_button_index).widget()
+                if board[i][j] == 0:
+                    button.setEnabled(True)
+                    button.setText('')
+                    button.setStyleSheet("")
+                elif board[i][j] == 1:
+                    button.setEnabled(False)
+                    button.setText('1')
+                    button.setStyleSheet("background-color:#ccd4f2;font-weight: bold;color: #000000;")
+                elif board[i][j] == 2:
+                    button.setEnabled(False)
+                    button.setText('2')
+                    button.setStyleSheet("background-color:#ff8e97;font-weight: bold;color: #000000;")
+
+
 
     def check_win(self, win):
         """

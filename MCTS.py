@@ -11,7 +11,7 @@ import MidControl
 import Momentum
 import time
 
-timeout = 0.05
+timeout = 1
 
 class Board:
     """
