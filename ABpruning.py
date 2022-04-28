@@ -7,6 +7,7 @@ import timeit
 import CapturedPieces
 import MidControl
 import Momentum
+
 sys.setrecursionlimit(15000)
 pinfi = sys.maxsize
 ninfi = -sys.maxsize
@@ -24,28 +25,28 @@ ninfi = -sys.maxsize
 numberOfHeuristic = 5
 bigDepth = 2
 Combinations = {
-    1:{1:1, 2:1, 3:"player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces"},
-    2:{1:1, 2:2, 3:"player 1 -- ConsecutivePieces, player 2 -- CapturedPieces"},
-    3:{1: 1, 2: 3, 3:"player 1 -- ConsecutivePieces, player 2 -- mid_control_pieces"},
-    4: {1: 1, 2: 4, 3:"player 1 -- ConsecutivePieces, player 2 -- mid_control_streaks"},
-    5: {1: 1, 2: 5, 3:"player 1 -- ConsecutivePieces, player 2 -- Momentum"},
-    6: {1: 1, 2: 6, 3:"player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces + CapturedPieces"},
-    7: {1: 1, 2: 7, 3:"player 1 -- ConsecutivePieces, player 2 -- Momentum + CapturedPieces"},
-    8: {1: 1, 2: 8, 3:"player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces + mid_control_pieces"},
-    9: {1: 1, 2: 9, 3:"player 1 -- ConsecutivePieces, player 2 -- Momentum + mid_control_pieces"},
-    10: {1: 1, 2: 10, 3:"player 1 -- ConsecutivePieces, player 2 -- mid_control_streaks + mid_control_pieces"},
+    1: {1: 1, 2: 1, 3: "player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces"},
+    2: {1: 1, 2: 2, 3: "player 1 -- ConsecutivePieces, player 2 -- CapturedPieces"},
+    3: {1: 1, 2: 3, 3: "player 1 -- ConsecutivePieces, player 2 -- mid_control_pieces"},
+    4: {1: 1, 2: 4, 3: "player 1 -- ConsecutivePieces, player 2 -- mid_control_streaks"},
+    5: {1: 1, 2: 5, 3: "player 1 -- ConsecutivePieces, player 2 -- Momentum"},
+    6: {1: 1, 2: 6, 3: "player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces + CapturedPieces"},
+    7: {1: 1, 2: 7, 3: "player 1 -- ConsecutivePieces, player 2 -- Momentum + CapturedPieces"},
+    8: {1: 1, 2: 8, 3: "player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces + mid_control_pieces"},
+    9: {1: 1, 2: 9, 3: "player 1 -- ConsecutivePieces, player 2 -- Momentum + mid_control_pieces"},
+    10: {1: 1, 2: 10, 3: "player 1 -- ConsecutivePieces, player 2 -- mid_control_streaks + mid_control_pieces"},
 }
 names = {
-    1:"ConsecutivePieces",
-    2:"CapturedPieces",
-    3:"mid_control_pieces",
-    4:"mid_control_streaks",
-    5:"Momentum",
-    6:"ConsecutivePieces + CapturedPieces",
-    7:"Momentum + CapturedPieces",
-    8:"ConsecutivePieces + mid_control_pieces",
-    9:"Momentum + mid_control_pieces",
-    10:"mid_control_streaks + mid_control_pieces",
+    1: "ConsecutivePieces",
+    2: "CapturedPieces",
+    3: "mid_control_pieces",
+    4: "mid_control_streaks",
+    5: "Momentum",
+    6: "ConsecutivePieces + CapturedPieces",
+    7: "Momentum + CapturedPieces",
+    8: "ConsecutivePieces + mid_control_pieces",
+    9: "Momentum + mid_control_pieces",
+    10: "mid_control_streaks + mid_control_pieces",
 }
 
 
@@ -122,38 +123,39 @@ def getHeu(board, player, capturess):
     """
 
     global numberOfHeuristic
-    if numberOfHeuristic == 1:    # 1 -- ConsecutivePieces
+    if numberOfHeuristic == 1:  # 1 -- ConsecutivePieces
         return ConsecutivePieces.calculate_streaks(board, player)
-    elif numberOfHeuristic == 2:    # 2 -- CapturedPieces
+    elif numberOfHeuristic == 2:  # 2 -- CapturedPieces
         return CapturedPieces.captured_pieces(board, capturess, player)
-    elif numberOfHeuristic == 3:    # 3 -- mid_control_pieces
+    elif numberOfHeuristic == 3:  # 3 -- mid_control_pieces
         return MidControl.mid_control_pieces(board, player)
-    elif numberOfHeuristic == 4:    # 4 -- mid_control_streaks
+    elif numberOfHeuristic == 4:  # 4 -- mid_control_streaks
         return MidControl.mid_control_streaks(board, player)
-    elif numberOfHeuristic == 5:    # 5 -- Momentum
+    elif numberOfHeuristic == 5:  # 5 -- Momentum
         tboard, score = Momentum.momentum_heuristic(board, player)
         heuristics = tboard
         return tboard, heuristics, score
-    elif numberOfHeuristic == 6:    # 6 -- ConsecutivePieces + CapturedPieces
+    elif numberOfHeuristic == 6:  # 6 -- ConsecutivePieces + CapturedPieces
         tboard, heuristics, score = ConsecutivePieces.calculate_streaks(board, player)
         tboard, heuristics, score1 = CapturedPieces.captured_pieces(board, capturess, player)
-        return tboard, heuristics, score1+score
-    elif numberOfHeuristic == 7:    # 7 -- Momentum + CapturedPieces
+        return tboard, heuristics, score1 + score
+    elif numberOfHeuristic == 7:  # 7 -- Momentum + CapturedPieces
         tboard, score = Momentum.momentum_heuristic(board, player)
         tboard, heuristics, score1 = CapturedPieces.captured_pieces(board, capturess, player)
-        return tboard, heuristics, score1+score
-    elif numberOfHeuristic == 8:    # 8 -- ConsecutivePieces + mid_control_pieces
+        return tboard, heuristics, score1 + score
+    elif numberOfHeuristic == 8:  # 8 -- ConsecutivePieces + mid_control_pieces
         tboard, heuristics, score = ConsecutivePieces.calculate_streaks(board, player)
         tboard, heuristics, score1 = MidControl.mid_control_pieces(board, player)
-        return tboard, heuristics, score1+score
-    elif numberOfHeuristic == 9:    # 9 -- Momentum + mid_control_pieces
+        return tboard, heuristics, score1 + score
+    elif numberOfHeuristic == 9:  # 9 -- Momentum + mid_control_pieces
         tboard, score = Momentum.momentum_heuristic(board, player)
         tboard, heuristics, score1 = MidControl.mid_control_pieces(board, player)
-        return tboard, heuristics, score1+score
-    elif numberOfHeuristic == 10:   # 10 -- mid_control_streaks + mid_control_pieces
+        return tboard, heuristics, score1 + score
+    elif numberOfHeuristic == 10:  # 10 -- mid_control_streaks + mid_control_pieces
         tboard, heuristics, score = MidControl.mid_control_streaks(board, player)
         tboard, heuristics, score1 = MidControl.mid_control_pieces(board, player)
-        return tboard, heuristics, score1+score
+        return tboard, heuristics, score1 + score
+
 
 def minmax(depth, board, maximizingPlayer, player, alpha, beta, size):
     """
@@ -170,7 +172,7 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta, size):
     """
     global bigDepth
     # Terminate conditions
-    if depth == bigDepth:   # The depth of alpha beta
+    if depth == bigDepth:  # The depth of alpha beta
         tboard, heuristics, score = getHeu(board.board, player, board.captures)
         # print(score)
         return score, board
@@ -229,7 +231,6 @@ def minmax(depth, board, maximizingPlayer, player, alpha, beta, size):
         return best, result
 
 
-
 def performGame(heur1, heur2, boardSize):
     """
     The implementation of the alpha beta pruning.
@@ -240,7 +241,6 @@ def performGame(heur1, heur2, boardSize):
 
     :return: 1 if player 1 wins or 2 if player 2 wins, board of the final round
     """
-
 
     # Assign the heuristics
     global numberOfHeuristic
@@ -294,7 +294,6 @@ def performGame(heur1, heur2, boardSize):
         board = Board(boardSize)
         board.board = game
         board.captures = copy.deepcopy(captures)
-
 
 
 if __name__ == '__main__':
