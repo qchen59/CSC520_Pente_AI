@@ -23,7 +23,7 @@ ninfi = -sys.maxsize
 # 9 -- Momentum + mid_control_pieces
 # 10 -- mid_control_streaks + mid_control_pieces
 numberOfHeuristic = 5
-bigDepth = 2
+bigDepth = 4
 Combinations = {
     1: {1: 1, 2: 1, 3: "player 1 -- ConsecutivePieces, player 2 -- ConsecutivePieces"},
     2: {1: 1, 2: 2, 3: "player 1 -- ConsecutivePieces, player 2 -- CapturedPieces"},
